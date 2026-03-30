@@ -59,6 +59,9 @@ public class AuthService : IAuthService
         if (user == null || !BCrypt.Net.BCrypt.Verify(dto.Password, user.PasswordHash))
             throw new UnauthorizedAccessException("Invalid email or password.");
 
+        if (!user.IsActive)
+            throw new UnauthorizedAccessException("Your account has been deactivated. Please contact support.");
+
         // Map and attach token
         var response = _mapper.Map<AuthResponseDto>(user);
         response.Token = _jwtService.GenerateToken(user);

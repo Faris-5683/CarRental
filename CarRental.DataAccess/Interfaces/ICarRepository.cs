@@ -15,5 +15,9 @@ namespace CarRental.DataAccess.Interfaces
         Task AddAsync(Car car);
         Task UpdateAsync(Car car);
         Task DeleteAsync(int id);
+
+        // Admin specific
+        Task<IEnumerable<Car>> GetAllIgnoreFilterAsync();
+        Task ForceDeleteAsync(int id);
     }
 }

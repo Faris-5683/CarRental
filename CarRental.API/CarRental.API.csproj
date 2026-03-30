@@ -7,6 +7,17 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Auth\**" />
+    <Compile Remove="Extensions\**" />
+    <Content Remove="Auth\**" />
+    <Content Remove="Extensions\**" />
+    <EmbeddedResource Remove="Auth\**" />
+    <EmbeddedResource Remove="Extensions\**" />
+    <None Remove="Auth\**" />
+    <None Remove="Extensions\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="AutoMapper" Version="16.1.1" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.25" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.25">
@@ -16,11 +27,6 @@
 	  <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.25" />
 	  <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.25" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Auth\" />
-    <Folder Include="Extensions\" />
   </ItemGroup>
 
   <ItemGroup>

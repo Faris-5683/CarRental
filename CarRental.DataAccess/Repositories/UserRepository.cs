@@ -22,6 +22,7 @@ public class UserRepository : IUserRepository
     public async Task<User?> GetByEmailAsync(string email)
     {
         return await _context.Users
+            .IgnoreQueryFilters()
             .FirstOrDefaultAsync(u => u.Email == email);
     }
 
@@ -37,12 +38,13 @@ public class UserRepository : IUserRepository
         await _context.SaveChangesAsync();
     }
 
-    public async Task DeleteAsync(int id)
+    // Soft delete — regular user deletes their own account
+    public async Task SoftDeleteAsync(int id)
     {
         var user = await GetByIdAsync(id);
         if (user != null)
         {
-            _context.Users.Remove(user);
+            user.IsActive = false;
             await _context.SaveChangesAsync();
         }
     }
@@ -51,5 +53,52 @@ public class UserRepository : IUserRepository
     {
         return await _context.Users
             .AnyAsync(u => u.Email == email);
+    }
+    public async Task<IEnumerable<User>> GetAllAsync()
+    {
+        return await _context.Users
+            .AsNoTracking()
+            .ToListAsync();
+    }
+
+    public async Task<User?> GetByIdIgnoreFilterAsync(int id)
+    {
+        return await _context.Users
+            .IgnoreQueryFilters()
+            .FirstOrDefaultAsync(u => u.Id == id);
+    }
+
+    public async Task DeactivateAsync(int id)
+    {
+        var user = await GetByIdIgnoreFilterAsync(id);
+        if (user != null)
+        {
+            user.IsActive = false;
+            await _context.SaveChangesAsync();
+        }
+    }
+
+    public async Task ReactivateAsync(int id)
+    {
+        var user = await GetByIdIgnoreFilterAsync(id);
+        if (user != null)
+        {
+            user.IsActive = true;
+            await _context.SaveChangesAsync();
+        }
+    }
+
+    // Hard delete — admin permanently removes a user
+    public async Task DeleteAsync(int id)
+    {
+        var user = await _context.Users
+            .IgnoreQueryFilters()
+            .FirstOrDefaultAsync(u => u.Id == id);
+
+        if (user != null)
+        {
+            _context.Users.Remove(user);
+            await _context.SaveChangesAsync();
+        }
     }
 }

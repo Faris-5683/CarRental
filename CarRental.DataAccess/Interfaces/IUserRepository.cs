@@ -1,19 +1,18 @@
-﻿using CarRental.Domain.Entities;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿namespace CarRental.DataAccess.Interfaces;
 
-namespace CarRental.DataAccess.Interfaces
+public interface IUserRepository
 {
-    public interface IUserRepository
-    {
-        Task<User?> GetByIdAsync(int id);
-        Task<User?> GetByEmailAsync(string email);  // used by AuthService for login
-        Task AddAsync(User user);                    // used by AuthService for register
-        Task UpdateAsync(User user);
-        Task DeleteAsync(int id);
-        Task<bool> ExistsAsync(string email);        // used by AuthService to check duplicate
-    }
+    Task<User?> GetByIdAsync(int id);
+    Task<User?> GetByEmailAsync(string email);
+    Task AddAsync(User user);
+    Task UpdateAsync(User user);
+    Task<bool> ExistsAsync(string email);
+
+    // Admin specific
+    Task<IEnumerable<User>> GetAllAsync();
+    Task<User?> GetByIdIgnoreFilterAsync(int id);
+    Task DeactivateAsync(int id);
+    Task ReactivateAsync(int id);
+    Task SoftDeleteAsync(int id);    // user deletes own account
+    Task DeleteAsync(int id);        // admin hard deletes
 }

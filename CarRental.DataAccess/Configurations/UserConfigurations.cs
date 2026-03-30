@@ -34,6 +34,8 @@ namespace CarRental.DataAccess.Configurations
                    .WithOne(b => b.Renter)
                    .HasForeignKey(b => b.RenterId)
                    .OnDelete(DeleteBehavior.Restrict);
+
+            builder.HasQueryFilter(u => u.IsActive);
         }
     }
 }

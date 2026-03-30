@@ -65,4 +65,25 @@ public class CarRepository : ICarRepository
             await _context.SaveChangesAsync();
         }
     }
+    public async Task<IEnumerable<Car>> GetAllIgnoreFilterAsync()
+    {
+        return await _context.Cars
+            .IgnoreQueryFilters()
+            .Include(c => c.Owner)
+            .AsNoTracking()
+            .ToListAsync();
+    }
+
+    public async Task ForceDeleteAsync(int id)
+    {
+        var car = await _context.Cars
+            .IgnoreQueryFilters()
+            .FirstOrDefaultAsync(c => c.Id == id);
+
+        if (car != null)
+        {
+            _context.Cars.Remove(car);
+            await _context.SaveChangesAsync();
+        }
+    }
 }

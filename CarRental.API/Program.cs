@@ -2,16 +2,17 @@ using CarRental.API.Middleware;
 using CarRental.Business.Interfaces;
 using CarRental.Business.Mappings;
 using CarRental.Business.Services;
+using CarRental.DataAccess.Caching;
 using CarRental.DataAccess.Context;
 using CarRental.DataAccess.Interfaces;
 using CarRental.DataAccess.Repositories;
+using CarRental.DataAccess.Seeding;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using System.Text;
 using Microsoft.OpenApi.Models;
+using System.Text;
 using System.Text.Json.Serialization;
-using CarRental.DataAccess.Caching;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -29,6 +30,7 @@ builder.Services.AddAutoMapper(cfg =>
     cfg.AddProfile<AuthMappingProfile>();
     cfg.AddProfile<CarMappingProfile>();
     cfg.AddProfile<BookingMappingProfile>();
+    cfg.AddProfile<AdminMappingProfile>();
 });
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -97,8 +99,16 @@ builder.Services.AddStackExchangeRedisCache(options =>
 });
 
 builder.Services.AddScoped<IRedisCacheService, RedisCacheService>();
+builder.Services.AddScoped<IAdminService, AdminService>();
 
 var app = builder.Build();
+
+using (var scope = app.Services.CreateScope())
+{
+    var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    var configuration = scope.ServiceProvider.GetRequiredService<IConfiguration>();
+    await DbSeeder.SeedAsync(context, configuration);
+}
 
 app.UseMiddleware<ExceptionMiddleware>();
 
