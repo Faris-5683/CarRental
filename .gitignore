@@ -3,6 +3,14 @@
 ##
 ## Get latest from `dotnet new gitignore`
 
+# Secrets
+appsettings.Development.json
+appsettings.Production.json
+**/secrets.json
+
+# User secrets are already outside project but just in case
+secrets.json
+
 # dotenv files
 .env
 
