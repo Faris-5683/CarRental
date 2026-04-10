@@ -164,9 +164,6 @@ app.UseMiddleware<ExceptionMiddleware>();
 app.UseSwagger();
 app.UseSwaggerUI();
 
-// Redirect root to Swagger
-app.MapGet("/", () => Results.Redirect("/swagger"));
-
 // app.UseHttpsRedirection();   ← commented out for Azure Linux
 
 app.UseAuthentication();
