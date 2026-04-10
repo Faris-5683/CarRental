@@ -5,36 +5,62 @@ using CarRental.Business.Interfaces;
 using CarRental.DataAccess.Interfaces;
 using CarRental.Domain.Entities;
 using CarRental.Domain.Enums;
+using Microsoft.Extensions.Logging;
 
 public class CarService : ICarService
 {
     private readonly ICarRepository _carRepository;
     private readonly IMapper _mapper;
     private readonly IRedisCacheService _cache;
+    private readonly ILogger<CarService> _logger;
 
     private const string AllCarsCacheKey = "cars:all";
 
     public CarService(
         ICarRepository carRepository,
         IMapper mapper,
-        IRedisCacheService cache)
+        IRedisCacheService cache,
+        ILogger<CarService> logger)
     {
         _carRepository = carRepository;
         _mapper = mapper;
         _cache = cache;
+        _logger = logger;
     }
 
     public async Task<IEnumerable<CarDto>> GetAllCarsAsync()
     {
-        var cached = await _cache.GetAsync<IEnumerable<CarDto>>(AllCarsCacheKey);
-        if (cached != null) return cached;
+        try
+        {
+            _logger.LogInformation("Checking Redis cache for key: {Key}", AllCarsCacheKey);
 
-        var cars = await _carRepository.GetAllAsync();
-        var result = _mapper.Map<IEnumerable<CarDto>>(cars);
+            var cached = await _cache.GetAsync<IEnumerable<CarDto>>(AllCarsCacheKey);
 
-        await _cache.SetAsync(AllCarsCacheKey, result, TimeSpan.FromMinutes(5));
+            if (cached != null)
+            {
+                _logger.LogInformation("CACHE HIT — returning from Redis");
+                return cached;
+            }
 
-        return result;
+            _logger.LogInformation("CACHE MISS — querying database");
+
+            var cars = await _carRepository.GetAllAsync();
+            var result = _mapper.Map<IEnumerable<CarDto>>(cars);
+
+            await _cache.SetAsync(AllCarsCacheKey, result, TimeSpan.FromMinutes(5));
+
+            _logger.LogInformation("Data stored in Redis cache");
+
+            return result;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Redis error: {Message}", ex.Message);
+
+            // Fallback to database
+            var cars = await _carRepository.GetAllAsync();
+            return _mapper.Map<IEnumerable<CarDto>>(cars);
+        }
     }
 
     public async Task<CarDto> CreateCarAsync(int ownerId, CreateCarDto dto)
