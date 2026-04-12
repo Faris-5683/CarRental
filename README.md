@@ -101,5 +101,3 @@ Hosted on **Microsoft Azure**:
 ## 👤 Author
 
 **Muhammad Faris Khan** — [@Faris-5683](https://github.com/Faris-5683)
-
-**Live link will only be shared with employers**
