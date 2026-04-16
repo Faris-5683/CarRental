@@ -1,0 +1,78 @@
+# Name of this workflow — shows in GitHub Actions tab
+name: Build and Deploy to Azure
+
+# WHEN to trigger this workflow
+on:
+  push:                          # trigger on push event
+    branches:                    
+      - main                     # only when you push to main branch
+                                 # pushing to other branches won't trigger this
+
+
+jobs:
+
+  # Job name — It can be named anything
+  build-and-deploy:
+
+    # 
+    # running on ubuntu-latest becuase i have selected App Service (Linux) on Azure portal
+    runs-on: ubuntu-latest
+
+ 
+    steps:
+
+      # STEP 1 — Checkout code
+      # This will download my repository code onto the GitHub runner machine
+      # Without this step the runner has no code to work with
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+        
+
+      # STEP 2 — Setup .NET
+      # The Ubuntu runner doesn't have .NET installed by default
+      # This installs .NET 8 on the runner machine
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'   # install .NET 8, x means latest patch version
+
+      # STEP 3 — Restore NuGet packages
+      # --locked-mode ensures exact versions from packages.lock.json are used
+      - name: Restore dependencies
+        run: dotnet restore CarRental.sln
+
+      # STEP 4 — Build the project
+      # --configuration Release builds in Release mode (optimized, no debug symbols)
+      - name: Build
+        run: dotnet build CarRental.sln
+          --no-restore
+          --configuration Release
+
+      # STEP 5 — Publish the API project
+      # Creates a deployable package of API
+      # -c Release = Release configuration
+      # -o ./publish = output folder on the runner machine
+      # --no-build = skip building again since we built in step 4
+      # Only the API project is published — not Business/DataAccess/Domain
+      # Those get included automatically as dependencies
+      - name: Publish
+        run: dotnet publish CarRental.API/CarRental.API.csproj
+          -c Release
+          -o ./publish
+          --no-build
+
+      # STEP 6 — Deploy to Azure App Service
+      # This official Microsoft action takes published files
+      # and uploads them to Azure App Service
+      - name: Deploy to Azure
+        uses: azure/webapps-deploy@v3
+        with:
+          # Your Azure App Service name
+          app-name: 'car-rental'
+
+          # ${{ secrets.X }} reads from GitHub Secrets
+          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+
+          # The folder containing our published files from step 5
+          package: ./publish
