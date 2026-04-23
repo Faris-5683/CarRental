@@ -81,7 +81,7 @@ public class BookingService : IBookingService
             StartDate = dto.StartDate,
             EndDate = dto.EndDate,
             TotalPrice = totalPrice,
-            Status = BookingStatus.Pending,
+            Status = BookingStatus.Confirmed,
             CreatedAt = DateTime.UtcNow
         };
 
