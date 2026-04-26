@@ -4,6 +4,12 @@ A **car rental marketplace API** where users can list their cars for rent and bo
 
 ---
 
+## 🔐 Test Credentials
+Email:    test@user.com <br>
+Password: Testing@user
+
+---
+
 ## 🛠️ Tech Stack
 
 - **.NET 8 Web API** — REST API framework
